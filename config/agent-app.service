@@ -1,0 +1,24 @@
+[Unit]
+Description=Agent assignment application
+After=network.target
+
+[Service]
+Type=simple
+User=agent-admin
+Group=agent-core
+SupplementaryGroups=agent-common
+WorkingDirectory=/opt/agent-app
+ExecStart=/bin/bash -c '. /etc/agent-app.env; exec /opt/agent-app/bin/run-app.sh'
+Restart=on-failure
+RestartSec=3
+UMask=0007
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/agent-app/upload_files /var/log/agent-app
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

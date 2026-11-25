@@ -1,0 +1,56 @@
+Validation time: 2026-11-25T15:20:55+09:00
+Linux localhost 6.18.58.1-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Tue Oct 27 00:24:11 UTC 2026 x86_64 GNU/Linux
+PRETTY_NAME="Ubuntu 26.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="26.04"
+VERSION="26.04.1 LTS (Resolute Raccoon)"
+VERSION_CODENAME=resolute
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=resolute
+LOGO=ubuntu-logo
+uid=1000(last_) gid=1000(last_) groups=1000(last_),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),100(users)
+
+[PASS] Bash and Python syntax
+[PASS] Deployment utilities reject non-root execution before making changes
+[PASS] Missing application exits 1 without a sample
+[PASS] Invalid key rejects boot
+[PASS] Non-root boot has five OK checks, READY, and 0.0.0.0:15034
+Starting Agent Boot Sequence... (verification replacement)
+[1/5] Checking User Account [OK]
+[2/5] Verifying Environment Variables [OK]
+[3/5] Checking Required Files [OK]
+[4/5] Checking Port Availability [OK]
+[5/5] Verifying Log Permission [OK]
+All Boot Checks Passed!
+Agent READY
+[PASS] Real process, owned port, resources, and timestamped log
+====== SYSTEM MONITOR RESULT ======
+[OK] Process PID:472
+[OK] TCP 15034 LISTEN, owned by PID:472
+[WARNING] No supported firewall found
+CPU Usage: 0.0%
+MEM Usage: 5.4%
+DISK Used: 1%
+[INFO] Log appended: /mnt/d/Codissey/4-1/.test-runtime/run.ibD3Ek/logs/monitor.log
+[2026-11-25 15:20:57] PID:472 CPU:0.0% MEM:5.4% DISK_USED:1%
+[PASS] Matching launcher and worker resolve to the actual listening PID
+[PASS] Concurrent execution is skipped under flock
+[PASS] Strict threshold boundaries CPU>20, MEM>10, DISK>80
+[PASS] Active, inactive, and inaccessible firewall status; warnings remain non-fatal
+[PASS] Pre-append rotation preserves data and keeps ten files within 10MiB
+[PASS] Filename substring does not match an application argv token
+[PASS] Matching process with missing listener exits 1
+[PASS] Unrelated listener does not satisfy application health
+[PASS] Report averages, extrema timestamps, sample count, and malformed line handling
+[PASS] Inclusive report range, no samples, reversed range, and invalid calendar date
+[PASS] Seven-day compression, thirty-day deletion, active log exclusions, and empty targets
+[PASS] Missing archive directory returns a safe warning
+[PASS] Firewall probe produces an explicit state without aborting healthy collection
+
+RESULT: 19 checks passed
+[INFO] Test artifacts: /mnt/d/Codissey/4-1/.test-runtime/run.ibD3Ek
