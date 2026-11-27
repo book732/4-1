@@ -2,7 +2,7 @@
 
 첨부 과제의 보안·계정·권한·앱 실행·시스템 관제·cron 요구사항을 구현한 Bash 프로젝트다. 보너스인 통계 리포트와 시간 기반 로그 보존도 포함한다. 원본은 [4-1.pdf](4-1.pdf), 제출용 수행 내역서는 [docs/수행내역서.md](docs/수행내역서.md)다.
 
-**검증 상태:** Ubuntu 26.04.1 LTS / WSL2의 일반 사용자로 격리 검증 19개를 통과했다. 호스트의 계정·SSH·방화벽·crontab은 변경하지 않았다. 원본 `agent-app.zip`은 제공되지 않아 `app/agent_app.py`라는 검증용 대체 앱으로 테스트했다. 원본 앱과 실제 서버 설정의 검증은 전용 실습 VM에서 아래 설치 및 증거 수집을 완료해야 한다.
+**검증 상태:** WSL Ubuntu의 일반 사용자 격리 검증 19개를 통과했다. 추가로 사용자가 제공한 2026-11-27 Mac OrbStack / Ubuntu 26.04.1 실행 기록에서 SSH·UFW·계정·ACL·대체 앱·cron 검증의 `ALL DEPLOYMENT CHECKS PASSED`를 확인했다. 기록은 [사용자 제공 배포 검증 텍스트](evidence/mac-orbstack-deployment-pasted.txt)에 보존했다. 원본 `agent-app.zip`은 제공되지 않아 `app/agent_app.py`라는 대체 앱으로 검증했으며, 원본 앱 실행 검증은 남아 있다.
 
 ## 파일 구성
 
@@ -22,6 +22,7 @@
 | `app/agent_app.py` | 원본이 없는 상태에서 사용하는 명시적 검증용 대체 앱 |
 | `evidence/local-validation.log` | 이 작업에서 실제 실행한 격리 검증 원문 |
 | `evidence/systemd-*.log` | 기본 그룹 불일치 오류의 systemd 재현 및 수정 후 검증 |
+| `evidence/mac-orbstack-deployment-pasted.txt` | 사용자가 제공한 Mac OrbStack의 실제 배포 검증 출력 |
 
 ## 일반 사용자 검증
 
@@ -33,7 +34,7 @@ Linux에서 프로젝트 루트로 이동한 후 `bash scripts/validate.sh`를 �
 
 ## Mac에서 실행하기
 
-Mac에서는 UTM 안에 Ubuntu 가상머신을 만들고 그 안에서 실행한다. 이 프로젝트는 Linux의 `/proc`, systemd, UFW를 사용하므로 Ubuntu 환경이 필요하다. Mac의 Ubuntu VM에서 실제 실행한 검증 결과는 아직 없으며, 기존 19개 통과 기록은 Windows의 WSL 환경에서 얻은 것이다.
+Mac에서는 Ubuntu Linux 환경 안에서 실행한다. 이 프로젝트는 Linux의 `/proc`, systemd, UFW를 사용한다. 아래 신규 설치 안내는 UTM 기준이며, 실제 사용자 제공 성공 기록은 OrbStack의 Ubuntu 26.04.1 / x86-64 환경에서 얻었다. UTM에서의 실제 실행 검증과는 구분한다. 이미 Ubuntu가 준비돼 있다면 2단계부터 진행할 수 있다.
 
 ### 1. UTM 및 Ubuntu 준비
 

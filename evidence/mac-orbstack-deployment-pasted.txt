@@ -1,0 +1,299 @@
+bookstory7328951@ubuntu:~/4-1$ _show_agent_result() {
+
+    sudo cat "$HOME/4-1/evidence/deployment-evidence.txt"
+
+}
+
+
+_show_agent_result
+
+Evidence time: 2026-11-27T20:49:10+09:00
+
+Linux ubuntu 7.0.14-orbstack-00380-ga7e0a2dc9535 #1 SMP PREEMPT Fri Aug  7 03:48:40 UTC 2026 x86_64 GNU/Linux
+
+PRETTY_NAME="Ubuntu 26.04.1 LTS"
+
+NAME="Ubuntu"
+
+VERSION_ID="26.04"
+
+VERSION="26.04.1 LTS (Resolute Raccoon)"
+
+VERSION_CODENAME=resolute
+
+ID=ubuntu
+
+ID_LIKE=debian
+
+HOME_URL="[https://www.ubuntu.com/](https://www.ubuntu.com/)"
+
+SUPPORT_URL="[https://help.ubuntu.com/](https://help.ubuntu.com/)"
+
+BUG_REPORT_URL="[https://bugs.launchpad.net/ubuntu/](https://bugs.launchpad.net/ubuntu/)"
+
+PRIVACY_POLICY_URL="[https://www.ubuntu.com/legal/terms-and-policies/privacy-policy](https://www.ubuntu.com/legal/terms-and-policies/privacy-policy)"
+
+UBUNTU_CODENAME=resolute
+
+LOGO=ubuntu-logo
+
+
+=== SSH effective configuration and listeners ===
+
+port 20022
+
+permitrootlogin no
+
+State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess                           
+
+LISTEN 0      5            0.0.0.0:15034      0.0.0.0:*    users:(("python3",pid=7260,fd=3))
+
+LISTEN 0      128          0.0.0.0:20022      0.0.0.0:*    users:(("sshd",pid=8057,fd=6))   
+
+LISTEN 0      128             [::]:20022         [::]:*    users:(("sshd",pid=8057,fd=7))   
+
+
+=== UFW ===
+
+Status: active
+
+Logging: on (low)
+
+Default: deny (incoming), allow (outgoing), deny (routed)
+
+New profiles: skip
+
+
+To                         Action      From
+
+--                         ------      ----
+
+20022/tcp                  ALLOW IN    Anywhere                  
+
+15034/tcp                  ALLOW IN    Anywhere                  
+
+20022/tcp (v6)             ALLOW IN    Anywhere (v6)             
+
+15034/tcp (v6)             ALLOW IN    Anywhere (v6)             
+
+
+Added user rules (see 'ufw status' for running firewall):
+
+ufw allow 20022/tcp
+
+ufw allow 15034/tcp
+
+
+=== Accounts, groups, directories, ACL ===
+
+uid=1000(agent-admin) gid=1002(agent-admin) groups=1002(agent-admin),1000(agent-common),1001(agent-core)
+
+uid=1001(agent-dev) gid=1003(agent-dev) groups=1003(agent-dev),1000(agent-common),1001(agent-core)
+
+uid=1002(agent-test) gid=1004(agent-test) groups=1004(agent-test),1000(agent-common)
+
+drwxrws---+ 1 agent-admin agent-common 0 Nov 27 20:29 /opt/agent-app/upload_files
+
+# file: /opt/agent-app/upload_files
+
+# owner: agent-admin
+
+# group: agent-common
+
+# flags: -s-
+
+user::rwx
+
+group::rwx
+
+mask::rwx
+
+other::---
+
+default:user::rwx
+
+default:group::rwx
+
+default:mask::rwx
+
+default:other::---
+
+
+[PASS] agent-admin access=yes /opt/agent-app/upload_files
+
+[PASS] agent-dev access=yes /opt/agent-app/upload_files
+
+[PASS] agent-test access=yes /opt/agent-app/upload_files
+
+drwxrws---+ 1 agent-admin agent-core 24 Nov 27 20:29 /opt/agent-app/api_keys
+
+# file: /opt/agent-app/api_keys
+
+# owner: agent-admin
+
+# group: agent-core
+
+# flags: -s-
+
+user::rwx
+
+group::rwx
+
+mask::rwx
+
+other::---
+
+default:user::rwx
+
+default:group::rwx
+
+default:mask::rwx
+
+default:other::---
+
+
+[PASS] agent-admin access=yes /opt/agent-app/api_keys
+
+[PASS] agent-dev access=yes /opt/agent-app/api_keys
+
+[PASS] agent-test access=no /opt/agent-app/api_keys
+
+drwxrws---+ 1 agent-admin agent-core 64 Nov 27 20:38 /var/log/agent-app
+
+# file: /var/log/agent-app
+
+# owner: agent-admin
+
+# group: agent-core
+
+# flags: -s-
+
+user::rwx
+
+group::rwx
+
+mask::rwx
+
+other::---
+
+default:user::rwx
+
+default:group::rwx
+
+default:mask::rwx
+
+default:other::---
+
+
+[PASS] agent-admin access=yes /var/log/agent-app
+
+[PASS] agent-dev access=yes /var/log/agent-app
+
+[PASS] agent-test access=no /var/log/agent-app
+
+agent-dev:agent-core:750 /opt/agent-app/bin/monitor.sh
+
+agent-admin:agent-core:660 /opt/agent-app/api_keys/t_secret.key
+
+# file: /opt/agent-app/upload_files/.acl-evidence-8511
+
+# owner: agent-dev
+
+# group: agent-common
+
+user::rw-
+
+group::rwx	#effective:rw-
+
+mask::rw-
+
+other::---
+
+
+
+
+=== Application environment and current boot ===
+
+export AGENT_HOME=/opt/agent-app
+
+export AGENT_PORT=15034
+
+export AGENT_UPLOAD_DIR=/opt/agent-app/upload_files
+
+export AGENT_KEY_PATH=/opt/agent-app/api_keys/t_secret.key
+
+export AGENT_LOG_DIR=/var/log/agent-app
+
+export AGENT_EXECUTABLE=/opt/agent-app/agent_app.py
+
+active
+
+Starting Agent Boot Sequence... (verification replacement)
+
+[1/5] Checking User Account [OK]
+
+[2/5] Verifying Environment Variables [OK]
+
+[3/5] Checking Required Files [OK]
+
+[4/5] Checking Port Availability [OK]
+
+[5/5] Verifying Log Permission [OK]
+
+All Boot Checks Passed!
+
+Agent READY
+
+
+=== Manual monitor execution as agent-admin ===
+
+====== SYSTEM MONITOR RESULT ======
+
+[OK] Process PID:7260
+
+[OK] TCP 15034 LISTEN, owned by PID:7260
+
+[OK] UFW active
+
+CPU Usage: 0.0%
+
+MEM Usage: 3.9%
+
+DISK Used: 1%
+
+[INFO] Log appended: /var/log/agent-app/monitor.log
+
+[2026-11-27 20:46:02] PID:7260 CPU:0.2% MEM:3.5% DISK_USED:1%
+
+[2026-11-27 20:47:02] PID:7260 CPU:0.0% MEM:3.6% DISK_USED:1%
+
+[2026-11-27 20:48:02] PID:7260 CPU:0.7% MEM:3.6% DISK_USED:1%
+
+[2026-11-27 20:49:02] PID:7260 CPU:0.0% MEM:3.5% DISK_USED:1%
+
+[2026-11-27 20:49:11] PID:7260 CPU:0.0% MEM:3.9% DISK_USED:1%
+
+
+=== agent-admin crontab and automatic execution ===
+
+
+* * * * * /bin/bash -c '. /etc/agent-app.env; /opt/agent-app/bin/monitor.sh 2>&1 | /usr/bin/logger -t agent-monitor' # agent-app-monitor
+
+15 3 * * * /bin/bash -c '. /etc/agent-app.env; /opt/agent-app/bin/archive.sh 2>&1 | /usr/bin/logger -t agent-archive' # agent-app-archive
+
+active
+
+[PASS] Cron-only new sample recorded (rotation-safe).
+
+Before: [2026-11-27 20:49:11] PID:7260 CPU:0.0% MEM:3.9% DISK_USED:1%
+
+After: [2026-11-27 20:50:03] PID:7260 CPU:0.2% MEM:3.7% DISK_USED:1%
+
+[2026-11-27 20:49:02] PID:7260 CPU:0.0% MEM:3.5% DISK_USED:1%
+
+[2026-11-27 20:49:11] PID:7260 CPU:0.0% MEM:3.9% DISK_USED:1%
+
+[2026-11-27 20:50:03] PID:7260 CPU:0.2% MEM:3.7% DISK_USED:1%
+
+
+ALL DEPLOYMENT CHECKS PASSED
