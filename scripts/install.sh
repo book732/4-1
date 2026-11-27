@@ -11,7 +11,8 @@ _main() {
     export PATH=/usr/sbin:/usr/bin:/sbin:/bin
     [[ $EUID -eq 0 ]] || _fail 'Run this installer with sudo on a dedicated Ubuntu lab VM.'
     [[ -d /run/systemd/system ]] || _fail 'A booted systemd Linux environment is required.'
-    local _source _name _root _user _directory _existing _attempt _status
+    local _source _name _root _user _directory _existing _attempt _status _key_name
+    local -a _key_names=(t_secret.key)
     _root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
     if [[ $# -eq 1 && $1 == --demo ]]; then
         _source=$_root/app/agent_app.py
@@ -69,14 +70,20 @@ _main() {
     else
         install -o root -g agent-core -m 0750 "$_source" "/opt/agent-app/$_name"
     fi
-    if [[ -e /opt/agent-app/api_keys/t_secret.key ]]; then
-        [[ ! -L /opt/agent-app/api_keys/t_secret.key ]] || _fail 'Key file must not be a symbolic link.'
-        cmp -s /opt/agent-app/api_keys/t_secret.key <(printf 'agent_api_key_test\n') || _fail 'Existing key differs; it was not overwritten.'
-    else
-        printf 'agent_api_key_test\n' > /opt/agent-app/api_keys/t_secret.key
+    if [[ $_name == agent-app-linux-x86 || $_name == agent-app-linux-arm64 ]]; then
+        _key_names+=(secret.key)
     fi
-    chown agent-admin:agent-core /opt/agent-app/api_keys/t_secret.key
-    chmod 0660 /opt/agent-app/api_keys/t_secret.key
+    # Keep the PDF key and also provision the filename required by the original binaries.
+    for _key_name in "${_key_names[@]}"; do
+        [[ ! -L /opt/agent-app/api_keys/$_key_name ]] || _fail 'Key file must not be a symbolic link.'
+        if [[ -e /opt/agent-app/api_keys/$_key_name ]]; then
+            cmp -s "/opt/agent-app/api_keys/$_key_name" <(printf 'agent_api_key_test\n') || _fail 'Existing key differs; it was not overwritten.'
+        else
+            printf 'agent_api_key_test\n' > "/opt/agent-app/api_keys/$_key_name"
+        fi
+        chown agent-admin:agent-core "/opt/agent-app/api_keys/$_key_name"
+        chmod 0660 "/opt/agent-app/api_keys/$_key_name"
+    done
     install -o root -g root -m 0644 "$_root/config/agent-app.env" /etc/agent-app.env
     sed -i '/^export AGENT_EXECUTABLE=/d' /etc/agent-app.env
     printf 'export AGENT_EXECUTABLE=/opt/agent-app/%s\n' "$_name" >> /etc/agent-app.env

@@ -2,7 +2,7 @@
 
 첨부 과제의 보안·계정·권한·앱 실행·시스템 관제·cron 요구사항을 구현한 Bash 프로젝트다. 보너스인 통계 리포트와 시간 기반 로그 보존도 포함한다. 원본은 [4-1.pdf](4-1.pdf), 제출용 수행 내역서는 [docs/수행내역서.md](docs/수행내역서.md)다.
 
-**검증 상태:** Ubuntu 26.04.1 LTS / WSL2의 일반 사용자로 격리 검증 19개를 통과했다. 호스트의 계정·SSH·방화벽·crontab은 변경하지 않았다. 원본 `agent-app.zip`은 제공되지 않아 `app/agent_app.py`라는 검증용 대체 앱으로 테스트했다. 원본 앱과 실제 서버 설정의 검증은 전용 실습 VM에서 아래 설치 및 증거 수집을 완료해야 한다.
+**검증 상태:** Ubuntu 26.04.1 LTS / WSL2의 일반 사용자로 격리 검증 19개를 통과했다. 추가로 제공된 `agent-app.zip`의 x86 원본 앱을 일반 사용자로 기동해 부트 5단계·READY·포트 소유권·관제를 확인했다. 원본 실행 파일은 PDF와 키 경로·파일명이 달라 호환 처리를 포함했다. 실제 Mac 배포 환경에서의 원본 앱 최종 검증은 아래 절차로 별도 수행해야 한다.
 
 ## 파일 구성
 
@@ -18,6 +18,7 @@
 | `scripts/validate.sh`, `tests/run.sh` | 일반 사용자 격리 테스트 및 검증 기록 저장 |
 | `tests/systemd.sh` | 기존 일반 사용자로 실제 systemd 서비스의 포트 PID 조회 회귀 검증 |
 | `tests/access.sh` | 실제 보조 그룹 쓰기와 접근 검사 결과를 비교하는 회귀 검증 |
+| `tests/original.sh` | 제공된 원본 실행 파일의 부트·실행기·관제 호환성 검증 |
 | `config/` | 환경변수와 일반 사용자 앱 서비스 설정 |
 | `app/agent_app.py` | 원본이 없는 상태에서 사용하는 명시적 검증용 대체 앱 |
 | `evidence/local-validation.log` | 이 작업에서 실제 실행한 격리 검증 원문 |
@@ -140,6 +141,48 @@ _show_agent_result
 이 함수는 증거 파일을 읽어 출력한다. 출력 전체를 복사하거나 `deployment-evidence.txt` 파일을 첨부해 검토에 사용한다. 성공 화면도 캡처해 보관하고, 이 기록을 근거로 [수행 내역서](docs/수행내역서.md)에 실제 실행 환경과 검증 결과를 반영한다.
 
 `--demo`로 설치했다면 대체 앱 기준의 검증 결과임을 제출 자료에 명시한다. 과제에서 원본 앱 실행을 요구한다면 원본 앱으로 설치한 뒤 증거를 다시 수집해야 한다.
+
+<a id="install-original-app"></a>
+
+### 원본 앱으로 교체하고 검증하기: Intel Mac / OrbStack
+
+먼저 제공받은 `agent-app.zip`을 **Mac의 다운로드 폴더에 같은 이름으로 저장**한다. 아래 함수는 Ubuntu 홈의 `~/agent-app.zip`을 우선 찾고, 없으면 OrbStack이 공유한 Mac 다운로드 폴더에서 찾는다. Mac 파일은 Linux의 `/mnt/mac` 아래에서 접근할 수 있다. [OrbStack 공식 파일 공유 안내](https://docs.orbstack.dev/machines/file-sharing)
+
+그다음 **Ubuntu 콘솔**에서 아래 전체를 실행한다. 기존 x86-64 Ubuntu에서 최신 호환 코드를 받은 뒤 x86 앱만 압축 해제하고 대체 앱 서비스를 원본 앱으로 교체한다. 기존에 완료한 SSH·방화벽 설정은 재실행하지 않는다.
+
+```bash
+_install_original_agent() {
+    local _zip="$HOME/agent-app.zip"
+    local _directory="$HOME/agent-original"
+    local _mac_home
+
+    if [[ ! -f $_zip ]]; then
+        _mac_home=$(mac sh -c 'printf "%s" "$HOME"') || return
+        _zip="/mnt/mac$_mac_home/Downloads/agent-app.zip"
+    fi
+    if [[ ! -f $_zip ]]; then
+        printf 'agent-app.zip was not found in Ubuntu home or Mac Downloads.\n' >&2
+        return 1
+    fi
+
+    cd "$HOME/4-1" &&
+    git pull --ff-only origin main &&
+    sudo apt-get install -y unzip &&
+    mkdir -p "$_directory" &&
+    unzip -o "$_zip" agent-app-linux-x86 -d "$_directory" &&
+    sudo bash scripts/install.sh --app "$_directory/agent-app-linux-x86" &&
+    sudo bash scripts/collect-evidence.sh \
+        "$HOME/4-1/evidence/deployment-evidence-original.txt"
+}
+
+_install_original_agent
+```
+
+`Installation complete` 이후 증거 수집까지 진행하며 cron 확인을 위해 최대 약 78초 기다린다. 마지막 `ALL DEPLOYMENT CHECKS PASSED`가 성공 기준이다. 새 결과는 `~/4-1/evidence/deployment-evidence-original.txt`에 저장되어 기존 대체 앱 증거와 구분된다. 공개 저장소에는 원본 ZIP·실행 파일을 배포하지 않으며 Git 제외 규칙을 적용했다.
+
+제공된 실행 파일의 실제 부트 검사는 `AGENT_KEY_PATH`에 키 디렉터리를 요구하고 그 안의 `secret.key`를 읽는다. PDF와 대체 앱은 `api_keys/t_secret.key` 파일 경로를 요구한다. 설치기는 원본 파일명 `agent-app-linux-x86` 또는 `agent-app-linux-arm64`일 때 두 키 파일을 같은 과제용 문자열로 생성한다. 실행기는 이 두 원본 파일에 한해 자식 프로세스의 키 경로를 디렉터리로 변환한다. `/etc/agent-app.env`의 PDF 형식 경로는 유지하며, 이 차이는 제공 앱과 문서의 불일치에 대한 호환 처리다. 원본 실행 파일명을 임의로 변경하지 않는다.
+
+WSL의 원본 기동 검증은 `bash tests/original.sh /절대/경로/agent-app-linux-x86`로 수행했다. 임시 경로에서 부트·포트·관제만 검증했으며 전체 설치 검증은 아니다. 원본 앱은 별도로 `/var/log/agent-app/agent_app.log`를 열려고 하므로 운영 경로가 없는 격리 테스트에서는 콘솔 로깅 전환 경고가 나올 수 있다. 설치 스크립트는 해당 운영 로그 디렉터리를 준비한다. 원본 앱 자체의 자원 부하로 임계값 경고가 발생해도, 관제는 요구사항에 따라 수집을 계속한다.
 
 ### 설치 중 포트 소유권 오류가 발생한 경우
 

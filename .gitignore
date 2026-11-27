@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .test-runtime/
 evidence/runtime-*/
+agent-app.zip
+agent-app-linux-x86
+agent-app-linux-arm64
