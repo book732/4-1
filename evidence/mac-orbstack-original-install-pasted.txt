@@ -1,0 +1,507 @@
+bookstory7328951@ubuntu:~/4-1$ _install_original_agent() {
+
+    local _zip="$HOME/agent-app.zip"
+
+    local _directory="$HOME/agent-original"
+
+    local _mac_home
+
+
+
+    if [[ ! -f $_zip ]]; then
+
+        _mac_home=$(mac sh -c 'printf "%s" "$HOME"') || return
+
+        _zip="/mnt/mac$_mac_home/Downloads/agent-app.zip"
+
+    fi
+
+    if [[ ! -f $_zip ]]; then
+
+        printf 'agent-app.zip was not found in Ubuntu home or Mac Downloads.\n' >&2
+
+        return 1
+
+    fi
+
+
+
+    cd "$HOME/4-1" &&
+
+    git pull --ff-only origin main &&
+
+    sudo apt-get install -y unzip &&
+
+    mkdir -p "$_directory" &&
+
+    unzip -o "$_zip" agent-app-linux-x86 -d "$_directory" &&
+
+    sudo bash scripts/install.sh --app "$_directory/agent-app-linux-x86" &&
+
+    sudo bash scripts/collect-evidence.sh \
+
+        "$HOME/4-1/evidence/deployment-evidence-original.txt"
+
+}
+
+
+
+_install_original_agent
+
+remote: Enumerating objects: 25, done.
+
+remote: Counting objects: 100% (25/25), done.
+
+remote: Compressing objects: 100% (7/7), done.
+
+remote: Total 15 (delta 10), reused 13 (delta 8), pack-reused 0 (from 0)
+
+Unpacking objects: 100% (15/15), 5.67 KiB | 1.42 MiB/s, done.
+
+From https://github.com/book732/4-1
+
+ * branch            main       -> FETCH_HEAD
+
+   60ebb83..9119f68  main       -> origin/main
+
+Updating 60ebb83..9119f68
+
+Fast-forward
+
+ .gitignore                                                             |  3 +++
+
+ README.md                                                              | 63 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+
+ bin/run-app.sh                                                         |  5 +++++
+
+ "docs/\354\210\230\355\226\211\353\202\264\354\227\255\354\204\234.md" |  7 +++++--
+
+ scripts/install.sh                                                     | 23 +++++++++++++--------
+
+ tests/original.sh                                                      | 58 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ 6 files changed, 148 insertions(+), 11 deletions(-)
+
+ create mode 100755 tests/original.sh
+
+Reading package lists... Done
+
+Building dependency tree... Done
+
+Reading state information... Done
+
+Solving dependencies... Done
+
+Suggested packages:
+
+  zip
+
+The following NEW packages will be installed:
+
+  unzip
+
+0 upgraded, 1 newly installed, 0 to remove and 8 not upgraded.
+
+Need to get 180 kB of archives.
+
+After this operation, 426 kB of additional disk space will be used.
+
+Get:1 http://archive.ubuntu.com/ubuntu resolute/main amd64 unzip amd64 6.0-29ubuntu1 [180 kB]
+
+Fetched 180 kB in 2s (84.1 kB/s)
+
+Selecting previously unselected package unzip.
+
+(Reading database… 29724 files and directories currently installed.)
+
+Preparing to unpack …/unzip_6.0-29ubuntu1_amd64.deb…
+
+Unpacking unzip (6.0-29ubuntu1)…
+
+Setting up unzip (6.0-29ubuntu1)…
+
+Archive:  /mnt/mac/Users/bookstory7328951/Downloads/agent-app.zip
+
+  inflating: /home/bookstory7328951/agent-original/agent-app-linux-x86  
+
+Hit:1 http://archive.ubuntu.com/ubuntu resolute InRelease   
+
+Hit:2 http://archive.ubuntu.com/ubuntu resolute-updates InRelease            
+
+Hit:3 http://security.ubuntu.com/ubuntu resolute-security InRelease          
+
+Reading package lists... Done
+
+N: Some sources can be modernized. Run 'apt modernize-sources' to do so.
+
+Reading package lists... Done
+
+Building dependency tree... Done
+
+Reading state information... Done
+
+python3 is already the newest version (3.14.3-0ubuntu2).
+
+procps is already the newest version (2:4.0.4-9ubuntu1).
+
+iproute2 is already the newest version (6.19.0-1ubuntu1.1).
+
+acl is already the newest version (2.3.2-2).
+
+cron is already the newest version (3.0pl1-200ubuntu1).
+
+sudo is already the newest version (1.9.17p2-1ubuntu3.2).
+
+ufw is already the newest version (0.36.2-9build1).
+
+openssh-server is already the newest version (1:10.2p1-2ubuntu3.8).
+
+util-linux is already the newest version (2.41.3-3ubuntu2.2).
+
+gawk is already the newest version (1:5.3.2-1ubuntu1.1).
+
+gzip is already the newest version (1.14-1~exp2ubuntu1.1).
+
+Solving dependencies... Done
+
+0 upgraded, 0 newly installed, 0 to remove and 8 not upgraded.
+
+/etc/sudoers.d/agent-app-firewall: parsed OK
+
+Synchronizing state of cron.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+
+Executing: /usr/lib/systemd/systemd-sysv-install enable cron
+
+====== SYSTEM MONITOR RESULT ======
+
+[OK] Process PID:10382
+
+[OK] TCP 15034 LISTEN, owned by PID:10382
+
+[OK] UFW active
+
+CPU Usage: 1.7%
+
+MEM Usage: 3.7%
+
+DISK Used: 1%
+
+[INFO] Log appended: /var/log/agent-app/monitor.log
+
+[INFO] Installation complete. Configure SSH/UFW separately, then collect evidence.
+
+[INFO] New accounts are password-locked. Provision agent-admin SSH keys through the VM console.
+
+Evidence time: 2026-11-27T21:14:08+09:00
+
+Linux ubuntu 7.0.14-orbstack-00380-ga7e0a2dc9535 #1 SMP PREEMPT Fri Aug  7 03:48:40 UTC 2026 x86_64 GNU/Linux
+
+PRETTY_NAME="Ubuntu 26.04.1 LTS"
+
+NAME="Ubuntu"
+
+VERSION_ID="26.04"
+
+VERSION="26.04.1 LTS (Resolute Raccoon)"
+
+VERSION_CODENAME=resolute
+
+ID=ubuntu
+
+ID_LIKE=debian
+
+HOME_URL="https://www.ubuntu.com/"
+
+SUPPORT_URL="https://help.ubuntu.com/"
+
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+
+UBUNTU_CODENAME=resolute
+
+LOGO=ubuntu-logo
+
+
+
+=== SSH effective configuration and listeners ===
+
+port 20022
+
+permitrootlogin no
+
+State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess                                    
+
+LISTEN 0      1            0.0.0.0:15034      0.0.0.0:*    users:(("agent-app-linux",pid=10382,fd=4))
+
+LISTEN 0      128          0.0.0.0:20022      0.0.0.0:*    users:(("sshd",pid=8057,fd=6))            
+
+LISTEN 0      128             [::]:20022         [::]:*    users:(("sshd",pid=8057,fd=7))            
+
+
+
+=== UFW ===
+
+Status: active
+
+Logging: on (low)
+
+Default: deny (incoming), allow (outgoing), deny (routed)
+
+New profiles: skip
+
+
+
+To                         Action      From
+
+--                         ------      ----
+
+20022/tcp                  ALLOW IN    Anywhere                  
+
+15034/tcp                  ALLOW IN    Anywhere                  
+
+20022/tcp (v6)             ALLOW IN    Anywhere (v6)             
+
+15034/tcp (v6)             ALLOW IN    Anywhere (v6)             
+
+
+
+Added user rules (see 'ufw status' for running firewall):
+
+ufw allow 20022/tcp
+
+ufw allow 15034/tcp
+
+
+
+=== Accounts, groups, directories, ACL ===
+
+uid=1000(agent-admin) gid=1002(agent-admin) groups=1002(agent-admin),1000(agent-common),1001(agent-core)
+
+uid=1001(agent-dev) gid=1003(agent-dev) groups=1003(agent-dev),1000(agent-common),1001(agent-core)
+
+uid=1002(agent-test) gid=1004(agent-test) groups=1004(agent-test),1000(agent-common)
+
+drwxrws---+ 1 agent-admin agent-common 0 Nov 27 20:49 /opt/agent-app/upload_files
+
+# file: /opt/agent-app/upload_files
+
+# owner: agent-admin
+
+# group: agent-common
+
+# flags: -s-
+
+user::rwx
+
+group::rwx
+
+mask::rwx
+
+other::---
+
+default:user::rwx
+
+default:group::rwx
+
+default:mask::rwx
+
+default:other::---
+
+
+
+[PASS] agent-admin access=yes /opt/agent-app/upload_files
+
+[PASS] agent-dev access=yes /opt/agent-app/upload_files
+
+[PASS] agent-test access=yes /opt/agent-app/upload_files
+
+drwxrws---+ 1 agent-admin agent-core 44 Nov 27 21:14 /opt/agent-app/api_keys
+
+# file: /opt/agent-app/api_keys
+
+# owner: agent-admin
+
+# group: agent-core
+
+# flags: -s-
+
+user::rwx
+
+group::rwx
+
+mask::rwx
+
+other::---
+
+default:user::rwx
+
+default:group::rwx
+
+default:mask::rwx
+
+default:other::---
+
+
+
+[PASS] agent-admin access=yes /opt/agent-app/api_keys
+
+[PASS] agent-dev access=yes /opt/agent-app/api_keys
+
+[PASS] agent-test access=no /opt/agent-app/api_keys
+
+drwxrws---+ 1 agent-admin agent-core 90 Nov 27 21:14 /var/log/agent-app
+
+# file: /var/log/agent-app
+
+# owner: agent-admin
+
+# group: agent-core
+
+# flags: -s-
+
+user::rwx
+
+group::rwx
+
+mask::rwx
+
+other::---
+
+default:user::rwx
+
+default:group::rwx
+
+default:mask::rwx
+
+default:other::---
+
+
+
+[PASS] agent-admin access=yes /var/log/agent-app
+
+[PASS] agent-dev access=yes /var/log/agent-app
+
+[PASS] agent-test access=no /var/log/agent-app
+
+agent-dev:agent-core:750 /opt/agent-app/bin/monitor.sh
+
+agent-admin:agent-core:660 /opt/agent-app/api_keys/t_secret.key
+
+# file: /opt/agent-app/upload_files/.acl-evidence-10420
+
+# owner: agent-dev
+
+# group: agent-common
+
+user::rw-
+
+group::rwx	#effective:rw-
+
+mask::rw-
+
+other::---
+
+
+
+
+
+=== Application environment and current boot ===
+
+export AGENT_HOME=/opt/agent-app
+
+export AGENT_PORT=15034
+
+export AGENT_UPLOAD_DIR=/opt/agent-app/upload_files
+
+export AGENT_KEY_PATH=/opt/agent-app/api_keys/t_secret.key
+
+export AGENT_LOG_DIR=/var/log/agent-app
+
+export AGENT_EXECUTABLE=/opt/agent-app/agent-app-linux-x86
+
+active
+
+>>> Starting Agent Boot Sequence...
+
+[1/5] Checking User Account               [OK]
+
+   ... Running as service user 'agent-admin' (uid=1000)
+
+[2/5] Verifying Environment Variables     [OK]
+
+   ... All required Envs correct
+
+[3/5] Checking Required Files             [OK]
+
+   ... Verified 'secret.key' with correct key string.
+
+[4/5] Checking Port Availability          [OK]
+
+   ... Port 15034 is available.
+
+[5/5] Verifying Log Permission            [OK]
+
+   ... Log directory is writable: /var/log/agent-app
+
+------------------------------------------------------------
+
+All Boot Checks Passed!
+
+Agent READY
+
+2026-11-27 21:14:06,827 [INFO] [SafetyGuard] Process priority lowered (nice=10).
+
+2026-11-27 21:14:06,827 [INFO] Agent listening at port 15034
+
+2026-11-27 21:14:06,828 [INFO] === Agent Worker Started ===
+
+2026-11-27 21:14:06,828 [INFO]    > Cycle: 0 -> 256MB/Lv10 -> 0
+
+2026-11-27 21:14:06,828 [INFO] --- Step Info: Mode=UP, CPU Lv=1, Mem=0MB ---
+
+2026-11-27 21:14:06,832 [INFO] [Memory] Increasing... (+25 MB) Total: 25 MB
+
+2026-11-27 21:14:06,832 [INFO] [CPU] Occupy core for 1s (Level 1)
+
+
+
+=== Manual monitor execution as agent-admin ===
+
+====== SYSTEM MONITOR RESULT ======
+
+[OK] Process PID:10382
+
+[OK] TCP 15034 LISTEN, owned by PID:10382
+
+[OK] UFW active
+
+CPU Usage: 2.7%
+
+MEM Usage: 4.1%
+
+DISK Used: 1%
+
+[INFO] Log appended: /var/log/agent-app/monitor.log
+
+[2026-11-27 21:12:02] PID:7260 CPU:0.0% MEM:3.7% DISK_USED:1%
+
+[2026-11-27 21:13:02] PID:7260 CPU:0.2% MEM:3.6% DISK_USED:1%
+
+[2026-11-27 21:14:02] PID:7260 CPU:13.1% MEM:3.9% DISK_USED:1%
+
+[2026-11-27 21:14:08] PID:10382 CPU:1.7% MEM:3.7% DISK_USED:1%
+
+[2026-11-27 21:14:09] PID:10382 CPU:2.7% MEM:4.1% DISK_USED:1%
+
+
+
+=== agent-admin crontab and automatic execution ===
+
+
+
+* * * * * /bin/bash -c '. /etc/agent-app.env; /opt/agent-app/bin/monitor.sh 2>&1 | /usr/bin/logger -t agent-monitor' # agent-app-monitor
+
+15 3 * * * /bin/bash -c '. /etc/agent-app.env; /opt/agent-app/bin/archive.sh 2>&1 | /usr/bin/logger -t agent-archive' # agent-app-archive
+
+active

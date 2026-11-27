@@ -2,7 +2,7 @@
 
 첨부 과제의 보안·계정·권한·앱 실행·시스템 관제·cron 요구사항을 구현한 Bash 프로젝트다. 보너스인 통계 리포트와 시간 기반 로그 보존도 포함한다. 원본은 [4-1.pdf](4-1.pdf), 제출용 수행 내역서는 [docs/수행내역서.md](docs/수행내역서.md)다.
 
-**검증 상태:** WSL Ubuntu의 일반 사용자 격리 검증 19개를 통과했다. 사용자가 제공한 2026-11-27 Mac OrbStack / Ubuntu 26.04.1 기록에서도 대체 앱 배포 검증의 `ALL DEPLOYMENT CHECKS PASSED`를 확인했다. 해당 기록은 [사용자 제공 배포 검증 텍스트](evidence/mac-orbstack-deployment-pasted.txt)에 보존했다. 이후 제공된 원본 ZIP의 x86 앱도 WSL 일반 사용자로 기동해 부트 5단계·READY·포트·관제를 확인했고 키 경로·파일명 차이의 호환 처리를 포함했다. 실제 Mac 환경에서 원본 앱의 최종 배포 검증은 남아 있다.
+**검증 상태:** WSL Ubuntu의 일반 사용자 격리 검증 19개를 통과했다. 사용자가 제공한 Mac OrbStack / Ubuntu 기록에서도 대체 앱 배포 검증을 확인했다. 이후 원본 ZIP의 x86 앱을 WSL에서 기동 검증했고, Mac에서 원본 앱으로 교체한 설치·부트·관제 기록도 받았다. 원본 최종 `ALL DEPLOYMENT CHECKS PASSED`는 사용자의 후속 메시지로 확인했다. 원본 설치 기록은 [제공된 출력 텍스트](evidence/mac-orbstack-original-install-pasted.txt)에 보존했으며, 최종 성공 메시지의 직접 출력 원문과는 구분한다. 자세한 범위는 [수행 내역서](docs/수행내역서.md)에 정리했다.
 
 ## 파일 구성
 
@@ -24,6 +24,7 @@
 | `evidence/local-validation.log` | 이 작업에서 실제 실행한 격리 검증 원문 |
 | `evidence/systemd-*.log` | 기본 그룹 불일치 오류의 systemd 재현 및 수정 후 검증 |
 | `evidence/mac-orbstack-deployment-pasted.txt` | 사용자가 제공한 Mac OrbStack의 실제 배포 검증 출력 |
+| `evidence/mac-orbstack-original-install-pasted.txt` | 원본 앱 교체·부트·관제 출력, cron 대기 단계까지의 사용자 제공 기록 |
 
 ## 일반 사용자 검증
 
