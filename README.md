@@ -123,6 +123,24 @@ _collect_agent_evidence
 
 cron 검증을 위해 최대 약 78초 동안 기다린다. 기다리는 동안 다른 터미널에서 수동 관제를 실행하지 않는다. 마지막에 `ALL DEPLOYMENT CHECKS PASSED`가 나오면 완료이며, 증거 파일은 `~/4-1/evidence/deployment-evidence.txt`다. 읽을 때는 `sudo less "$HOME/4-1/evidence/deployment-evidence.txt"`를 사용하고 `q`로 나간다. 이 증거는 현재 설치한 앱을 대상으로 하므로 `--demo`로 설치했다면 대체 앱의 검증 결과다.
 
+<a id="show-agent-result"></a>
+
+### 6. 검증 성공 후 결과 확인 및 제출 자료 정리
+
+`ALL DEPLOYMENT CHECKS PASSED`를 확인한 뒤 아래 전체를 Ubuntu 콘솔에 붙여넣어 실행한다. 저장된 증거 파일을 화면에 출력하므로 내용을 복사할 수 있다.
+
+```bash
+_show_agent_result() {
+    sudo cat "$HOME/4-1/evidence/deployment-evidence.txt"
+}
+
+_show_agent_result
+```
+
+이 함수는 증거 파일을 읽어 출력한다. 출력 전체를 복사하거나 `deployment-evidence.txt` 파일을 첨부해 검토에 사용한다. 성공 화면도 캡처해 보관하고, 이 기록을 근거로 [수행 내역서](docs/수행내역서.md)에 실제 실행 환경과 검증 결과를 반영한다.
+
+`--demo`로 설치했다면 대체 앱 기준의 검증 결과임을 제출 자료에 명시한다. 과제에서 원본 앱 실행을 요구한다면 원본 앱으로 설치한 뒤 증거를 다시 수집해야 한다.
+
 ### 설치 중 포트 소유권 오류가 발생한 경우
 
 이전 서비스 설정은 `Group=agent-core`로 앱의 기본 그룹을 바꿨다. 관제는 `agent-admin`의 원래 기본 그룹으로 실행되어 같은 UID여도 `/proc/PID/fd` 접근 검사가 거부될 수 있었다. 그 결과 앱이 `Agent READY`와 LISTEN 상태여도 관제가 `TCP 15034 is not owned by application PID ...`로 실패했다. 현재 설정은 `Group=` 지정을 제거해 계정의 기본 그룹을 사용하며 `agent-core`는 보조 그룹으로 유지한다. 디렉터리·파일의 그룹 권한과 systemd 격리 설정은 그대로 적용한다.
