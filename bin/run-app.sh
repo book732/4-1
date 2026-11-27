@@ -9,6 +9,11 @@ _main() {
     if [[ $_executable == *.py ]]; then
         exec /usr/bin/python3 -u "$_executable"
     fi
+    # The provided binaries expect a key directory, unlike the PDF/demo file path.
+    if [[ ${_executable##*/} == agent-app-linux-x86 || ${_executable##*/} == agent-app-linux-arm64 ]] &&
+        [[ ${AGENT_KEY_PATH:-} == "$AGENT_HOME/api_keys/t_secret.key" ]]; then
+        export AGENT_KEY_PATH=$AGENT_HOME/api_keys
+    fi
     exec "$_executable"
 }
 
