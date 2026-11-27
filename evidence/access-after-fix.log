@@ -1,0 +1,12 @@
+Access regression time: 2026-11-27T20:47:32+09:00
+uid=1000(last_) gid=1000(last_) groups=1000(last_),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),100(users)
+root:adm:2770 /run/agent-access-regression.LHlsp0/shared
+root:root:700 /run/agent-access-regression.LHlsp0/restricted
+External test -r exit: 1
+External test -w exit: 1
+External test -x exit: 1
+[PASS] Actual file creation, write, and read through a supplementary group.
+[PASS] last_ access=yes /run/agent-access-regression.LHlsp0/shared
+[PASS] last_ access=no /run/agent-access-regression.LHlsp0/restricted
+[PASS] Expected rejection when a restricted directory requires shared access.
+[PASS] Directory checker accepts shared access and rejects denied access.

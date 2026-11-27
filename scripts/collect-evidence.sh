@@ -8,13 +8,12 @@ _fail() {
 
 _assert_access() {
     local _user=$1 _path=$2 _allowed=$3
-    if runuser -u "$_user" -- test -r "$_path" &&
-        runuser -u "$_user" -- test -w "$_path" &&
-        runuser -u "$_user" -- test -x "$_path"; then
+    # Use Bash access checks; some external test versions ignore supplementary groups/ACLs.
+    if runuser -u "$_user" -- /bin/bash -c '[[ -r $1 && -w $1 && -x $1 ]]' _ "$_path"; then
         [[ $_allowed == yes ]] || _fail "$_user unexpectedly has access to $_path"
     else
         [[ $_allowed == no ]] || _fail "$_user lacks required access to $_path"
-        if runuser -u "$_user" -- test -x "$_path"; then
+        if runuser -u "$_user" -- /bin/bash -c '[[ -x $1 ]]' _ "$_path"; then
             _fail "$_user can traverse restricted directory $_path"
         fi
     fi
@@ -72,7 +71,7 @@ _collect() {
     _probe=$AGENT_UPLOAD_DIR/.acl-evidence-$$
     runuser -u agent-dev -- /bin/bash -c 'umask 0022; : > "$1"' _ "$_probe"
     for _user in agent-admin agent-test; do
-        runuser -u "$_user" -- test -w "$_probe" || { rm -f -- "$_probe"; _fail 'Default ACL did not preserve shared file writes.'; }
+        runuser -u "$_user" -- /bin/bash -c '[[ -w $1 ]]' _ "$_probe" || { rm -f -- "$_probe"; _fail 'Default ACL did not preserve shared file writes.'; }
     done
     getfacl -p "$_probe"
     rm -- "$_probe"
@@ -121,4 +120,6 @@ _main() {
     _collect 2>&1 | tee "$_output"
 }
 
-_main "$@"
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+    _main "$@"
+fi

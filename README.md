@@ -17,6 +17,7 @@
 | `scripts/collect-evidence.sh` | 실제 배포 설정·접근 권한·부트·자동 cron 실행을 검증하고 기록 |
 | `scripts/validate.sh`, `tests/run.sh` | 일반 사용자 격리 테스트 및 검증 기록 저장 |
 | `tests/systemd.sh` | 기존 일반 사용자로 실제 systemd 서비스의 포트 PID 조회 회귀 검증 |
+| `tests/access.sh` | 실제 보조 그룹 쓰기와 접근 검사 결과를 비교하는 회귀 검증 |
 | `config/` | 환경변수와 일반 사용자 앱 서비스 설정 |
 | `app/agent_app.py` | 원본이 없는 상태에서 사용하는 명시적 검증용 대체 앱 |
 | `evidence/local-validation.log` | 이 작업에서 실제 실행한 격리 검증 원문 |
@@ -139,6 +140,25 @@ _repair_agent_lab
 ```
 
 추가 회귀 검증은 systemd가 실행 중인 Linux에서 `sudo bash tests/systemd.sh "$USER"`로 수행한다. 기존 일반 사용자와 임시 systemd 유닛을 사용하며 사용자 계정·SSH·방화벽은 변경하지 않는다. TCP 15034가 이미 사용 중이면 중단한다. 이 검증은 일반 사용자 테스트 19개와 별도이며, 실행이 끝나면 임시 서비스를 제거한다. 실패 진단용 파일은 `/run/agent-app-regression.*`에 남으며 재부팅 시 정리된다. 자세한 원인과 실측은 [서비스 관제 오류 수정 기록](docs/systemd-monitor-fix.md)을 참고한다.
+
+### 증거 수집에서 agent-dev 접근 오류가 발생한 경우
+
+그룹 소속과 폴더 권한이 맞는데 `agent-dev lacks required access to /opt/agent-app/upload_files`가 나온다면 외부 `test` 명령의 판정 문제일 수 있다. Ubuntu 26.04 환경에서 보조 그룹으로 실제 파일 생성·쓰기는 성공하지만 외부 `test -r/-w/-x`는 실패하는 경우를 재현했다. 현재 증거 수집기는 해당 사용자로 Bash의 접근 검사를 실행해 보조 그룹과 ACL이 적용된 권한을 확인한다. 보안 디렉터리의 접근 차단 검사와 공유 파일 기본 ACL 검사도 유지한다.
+
+아래 함수로 최신 변경을 받은 뒤 증거 수집만 다시 실행한다. 계정 재설치나 권한 변경은 필요하지 않다. 최종 `ALL DEPLOYMENT CHECKS PASSED`가 나와야 완료이며, 실제 권한 부족이 있으면 수정 후에도 검사는 실패한다.
+
+```bash
+_retry_agent_evidence() {
+    cd "$HOME/4-1" &&
+    git pull --ff-only origin main &&
+    sudo bash scripts/collect-evidence.sh \
+        "$HOME/4-1/evidence/deployment-evidence.txt"
+}
+
+_retry_agent_evidence
+```
+
+추가 회귀 검증은 기존 보조 그룹이 있는 일반 사용자 계정으로 `sudo bash tests/access.sh "$USER"`를 실행한다. 실제 쓰기·읽기와 접근 허용·차단을 `/run`의 임시 폴더에서 검사하며 계정이나 운영 경로 권한은 바꾸지 않는다. 자세한 원인과 전후 검증은 [접근 검사 오류 수정 기록](docs/access-check-fix.md)을 참고한다.
 
 ## 전용 Ubuntu 실습 VM 설치
 

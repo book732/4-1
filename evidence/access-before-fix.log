@@ -1,0 +1,9 @@
+Access regression time: 2026-11-27T20:46:43+09:00
+uid=1000(last_) gid=1000(last_) groups=1000(last_),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),100(users)
+root:adm:2770 /run/agent-access-regression.xffsZA/shared
+root:root:700 /run/agent-access-regression.xffsZA/restricted
+External test -r exit: 1
+External test -w exit: 1
+External test -x exit: 1
+[PASS] Actual file creation, write, and read through a supplementary group.
+[FAIL] last_ lacks required access to /run/agent-access-regression.xffsZA/shared
