@@ -85,6 +85,43 @@ _deploy_agent_lab
 
 `--demo`는 저장소에 포함된 Python 대체 앱을 설치한다. 원본 앱으로 최종 검증하려면 Mac 아키텍처에 맞는 원본 Linux 앱을 준비하고, 아래 전용 VM 설치 절차의 `--app` 방식으로 설치한 뒤 증거를 다시 수집한다. `agent-admin`의 SSH 인증키 등록은 별도 작업이며, 위 절차는 UTM 콘솔만으로 완료할 수 있다.
 
+<a id="configure-agent-security"></a>
+
+### 4. SSH·방화벽 설정을 따로 실행하기
+
+앱 설치에서 `Installation complete`가 나왔고 `[WARNING] UFW inactive`가 보인다면 앱 설치는 끝났지만 방화벽은 아직 비활성 상태다. 설치를 반복하지 않고 아래 보안 설정부터 진행한다. 위 `_deploy_agent_lab()` 함수로 증거 수집까지 모두 완료했다면 4·5단계를 추가로 실행할 필요는 없다.
+
+**실습용 Ubuntu의 콘솔에서** 아래 전체를 복사해 붙여넣고 실행한다. SSH 원격 접속 중이면 VM 콘솔로 전환한다. sudo가 암호를 요구하면 Ubuntu 로그인 계정의 암호를 입력하며, 입력 중 문자가 표시되지 않는 것은 정상이다.
+
+```bash
+_configure_agent_security() {
+    cd "$HOME/4-1" &&
+    sudo bash scripts/configure-security.sh --dedicated-lab
+}
+
+_configure_agent_security
+```
+
+이 함수는 프로젝트 폴더로 이동해 보안 설정 스크립트를 실행한다. SSH 포트를 TCP 20022로 변경하고 root 원격 로그인을 차단한다. UFW를 활성화하며 기본 수신 정책은 거부, 허용 TCP 포트는 20022·15034로 구성한다.
+
+출력에 `Status: active`와 마지막 안내 `SSH:20022, PermitRootLogin:no, UFW:deny incoming with TCP 20022/15034 allowed.`가 보이면 완료다. 기존 UFW 규칙이나 SSH 설정 충돌로 `[ERROR]`가 나오면 오류 내용을 확인하고 이 단계에서 중단한다.
+
+### 5. 최종 증거 수집
+
+보안 설정을 완료한 뒤 같은 Ubuntu 콘솔에서 아래 함수를 실행한다. 실제 계정·권한·앱 부트·방화벽·cron 자동 실행을 검사하고 결과를 파일로 저장한다.
+
+```bash
+_collect_agent_evidence() {
+    cd "$HOME/4-1" &&
+    sudo bash scripts/collect-evidence.sh \
+        "$HOME/4-1/evidence/deployment-evidence.txt"
+}
+
+_collect_agent_evidence
+```
+
+cron 검증을 위해 최대 약 78초 동안 기다린다. 기다리는 동안 다른 터미널에서 수동 관제를 실행하지 않는다. 마지막에 `ALL DEPLOYMENT CHECKS PASSED`가 나오면 완료이며, 증거 파일은 `~/4-1/evidence/deployment-evidence.txt`다. 읽을 때는 `sudo less "$HOME/4-1/evidence/deployment-evidence.txt"`를 사용하고 `q`로 나간다. 이 증거는 현재 설치한 앱을 대상으로 하므로 `--demo`로 설치했다면 대체 앱의 검증 결과다.
+
 ### 설치 중 포트 소유권 오류가 발생한 경우
 
 이전 서비스 설정은 `Group=agent-core`로 앱의 기본 그룹을 바꿨다. 관제는 `agent-admin`의 원래 기본 그룹으로 실행되어 같은 UID여도 `/proc/PID/fd` 접근 검사가 거부될 수 있었다. 그 결과 앱이 `Agent READY`와 LISTEN 상태여도 관제가 `TCP 15034 is not owned by application PID ...`로 실패했다. 현재 설정은 `Group=` 지정을 제거해 계정의 기본 그룹을 사용하며 `agent-core`는 보조 그룹으로 유지한다. 디렉터리·파일의 그룹 권한과 systemd 격리 설정은 그대로 적용한다.
