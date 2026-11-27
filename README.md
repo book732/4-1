@@ -16,9 +16,11 @@
 | `scripts/configure-security.sh` | 전용 VM의 SSH 20022, root 원격 로그인 차단, UFW 구성 |
 | `scripts/collect-evidence.sh` | 실제 배포 설정·접근 권한·부트·자동 cron 실행을 검증하고 기록 |
 | `scripts/validate.sh`, `tests/run.sh` | 일반 사용자 격리 테스트 및 검증 기록 저장 |
+| `tests/systemd.sh` | 기존 일반 사용자로 실제 systemd 서비스의 포트 PID 조회 회귀 검증 |
 | `config/` | 환경변수와 일반 사용자 앱 서비스 설정 |
 | `app/agent_app.py` | 원본이 없는 상태에서 사용하는 명시적 검증용 대체 앱 |
 | `evidence/local-validation.log` | 이 작업에서 실제 실행한 격리 검증 원문 |
+| `evidence/systemd-*.log` | 기본 그룹 불일치 오류의 systemd 재현 및 수정 후 검증 |
 
 ## 일반 사용자 검증
 
@@ -83,6 +85,24 @@ _deploy_agent_lab
 
 `--demo`는 저장소에 포함된 Python 대체 앱을 설치한다. 원본 앱으로 최종 검증하려면 Mac 아키텍처에 맞는 원본 Linux 앱을 준비하고, 아래 전용 VM 설치 절차의 `--app` 방식으로 설치한 뒤 증거를 다시 수집한다. `agent-admin`의 SSH 인증키 등록은 별도 작업이며, 위 절차는 UTM 콘솔만으로 완료할 수 있다.
 
+### 설치 중 포트 소유권 오류가 발생한 경우
+
+이전 서비스 설정은 `Group=agent-core`로 앱의 기본 그룹을 바꿨다. 관제는 `agent-admin`의 원래 기본 그룹으로 실행되어 같은 UID여도 `/proc/PID/fd` 접근 검사가 거부될 수 있었다. 그 결과 앱이 `Agent READY`와 LISTEN 상태여도 관제가 `TCP 15034 is not owned by application PID ...`로 실패했다. 현재 설정은 `Group=` 지정을 제거해 계정의 기본 그룹을 사용하며 `agent-core`는 보조 그룹으로 유지한다. 디렉터리·파일의 그룹 권한과 systemd 격리 설정은 그대로 적용한다.
+
+대체 앱 설치 중 이 오류가 발생했다면 아래 함수로 최신 변경을 받아 설치를 다시 실행한다. `git pull`에서 로컬 수정 충돌이 발생하면 덮어쓰지 않고 중단한다. 원본 앱을 설치했다면 `--demo` 대신 기존 `--app` 인수를 사용해야 한다.
+
+```bash
+_repair_agent_lab() {
+    cd "$HOME/4-1" &&
+    git pull --ff-only origin main &&
+    sudo bash scripts/install.sh --demo
+}
+
+_repair_agent_lab
+```
+
+추가 회귀 검증은 systemd가 실행 중인 Linux에서 `sudo bash tests/systemd.sh "$USER"`로 수행한다. 기존 일반 사용자와 임시 systemd 유닛을 사용하며 사용자 계정·SSH·방화벽은 변경하지 않는다. TCP 15034가 이미 사용 중이면 중단한다. 이 검증은 일반 사용자 테스트 19개와 별도이며, 실행이 끝나면 임시 서비스를 제거한다. 실패 진단용 파일은 `/run/agent-app-regression.*`에 남으며 재부팅 시 정리된다. 자세한 원인과 실측은 [서비스 관제 오류 수정 기록](docs/systemd-monitor-fix.md)을 참고한다.
+
 ## 전용 Ubuntu 실습 VM 설치
 
 Ubuntu 22.04 LTS 이상, systemd로 부팅한 전용 VM을 사용한다. 이 프로젝트를 VM에 복사하고 **VM 콘솔에서** 진행한다. 일반 컨테이너와 Windows 파일시스템 경로는 최종 계정·ACL·방화벽 검증 대상으로 적합하지 않다.
@@ -105,4 +125,4 @@ Ubuntu 22.04 LTS 이상, systemd로 부팅한 전용 VM을 사용한다. 이 프
 
 `report.sh`는 단일 awk 순회로 현재 로그의 통계를 계산한다. 회전된 파일과 압축 파일은 기본 집계 범위에 포함하지 않는다. `archive.sh`는 같은 잠금을 사용하며 7일 지난 일반 `.log` 및 회전 로그를 압축해 `/var/log/monitor/agent-app/archive/`로 옮긴다. 활성 `monitor.log`와 `boot.log`는 제외한다. 아카이브 생성 시각에서 30일이 지나면 삭제한다. 압축 결과를 임시 파일에 완성한 뒤 이름을 바꾸고 원본을 삭제한다.
 
-systemd는 앱을 `agent-admin:agent-core`로 실행하고 파일시스템 쓰기를 업로드·로그 디렉터리로 제한한다. 서비스 재시작 정책은 비정상 종료 시 3초 간격이다. 이 서비스 구성은 원본 앱이 과제에 명시된 디렉터리만 사용하는 것을 전제로 한다.
+systemd는 앱을 `agent-admin` 계정의 기본 그룹으로 실행하고 `agent-common`·`agent-core`를 보조 그룹으로 사용한다. 파일시스템 쓰기는 업로드·로그 디렉터리로 제한한다. 서비스 재시작 정책은 비정상 종료 시 3초 간격이다. 이 서비스 구성은 원본 앱이 과제에 명시된 디렉터리만 사용하는 것을 전제로 한다.

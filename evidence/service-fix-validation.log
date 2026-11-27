@@ -1,0 +1,39 @@
+[PASS] Bash and Python syntax
+[PASS] Deployment utilities reject non-root execution before making changes
+[PASS] Missing application exits 1 without a sample
+[PASS] Invalid key rejects boot
+[PASS] Non-root boot has five OK checks, READY, and 0.0.0.0:15034
+Starting Agent Boot Sequence... (verification replacement)
+[1/5] Checking User Account [OK]
+[2/5] Verifying Environment Variables [OK]
+[3/5] Checking Required Files [OK]
+[4/5] Checking Port Availability [OK]
+[5/5] Verifying Log Permission [OK]
+All Boot Checks Passed!
+Agent READY
+[PASS] Real process, owned port, resources, and timestamped log
+====== SYSTEM MONITOR RESULT ======
+[OK] Process PID:448
+[OK] TCP 15034 LISTEN, owned by PID:448
+[WARNING] No supported firewall found
+CPU Usage: 0.0%
+MEM Usage: 4.7%
+DISK Used: 1%
+[INFO] Log appended: /mnt/d/Codissey/4-1/.test-runtime/run.9EIihN/logs/monitor.log
+[2026-11-27 20:33:36] PID:448 CPU:0.0% MEM:4.7% DISK_USED:1%
+[PASS] Matching launcher and worker resolve to the actual listening PID
+[PASS] Concurrent execution is skipped under flock
+[PASS] Strict threshold boundaries CPU>20, MEM>10, DISK>80
+[PASS] Active, inactive, and inaccessible firewall status; warnings remain non-fatal
+[PASS] Pre-append rotation preserves data and keeps ten files within 10MiB
+[PASS] Filename substring does not match an application argv token
+[PASS] Matching process with missing listener exits 1
+[PASS] Unrelated listener does not satisfy application health
+[PASS] Report averages, extrema timestamps, sample count, and malformed line handling
+[PASS] Inclusive report range, no samples, reversed range, and invalid calendar date
+[PASS] Seven-day compression, thirty-day deletion, active log exclusions, and empty targets
+[PASS] Missing archive directory returns a safe warning
+[PASS] Firewall probe produces an explicit state without aborting healthy collection
+
+RESULT: 19 checks passed
+[INFO] Test artifacts: /mnt/d/Codissey/4-1/.test-runtime/run.9EIihN

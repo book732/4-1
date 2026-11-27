@@ -1,0 +1,25 @@
+systemd regression time: 2026-11-27T20:33:06+09:00
+Test account: last_, primary group: last_
+Started agent-app-regression-dlj8dz.service - Agent assignment application.
+Starting Agent Boot Sequence... (verification replacement)
+[1/5] Checking User Account [OK]
+[2/5] Verifying Environment Variables [OK]
+[3/5] Checking Required Files [OK]
+[4/5] Checking Port Availability [OK]
+[5/5] Verifying Log Permission [OK]
+All Boot Checks Passed!
+Agent READY
+Uid:	1000	1000	1000	1000
+Gid:	4	4	4	4
+Groups:	4 24 27 30 46 100 1000
+
+Root listener view:
+LISTEN 0      5      0.0.0.0:15034 0.0.0.0:* users:(("python3",pid=492,fd=3))
+
+Non-root listener view:
+LISTEN 0      5      0.0.0.0:15034 0.0.0.0:*
+
+Monitor exit: 1
+====== SYSTEM MONITOR RESULT ======
+[ERROR] TCP 15034 is not owned by application PID 492 (or another matching worker).
+[FAIL] Non-root monitor could not verify the systemd application.

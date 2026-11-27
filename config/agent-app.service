@@ -5,8 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=agent-admin
-Group=agent-core
-SupplementaryGroups=agent-common
+SupplementaryGroups=agent-common agent-core
 WorkingDirectory=/opt/agent-app
 ExecStart=/bin/bash -c '. /etc/agent-app.env; exec /opt/agent-app/bin/run-app.sh'
 Restart=on-failure
