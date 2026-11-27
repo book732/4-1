@@ -28,6 +28,61 @@ Linux에서 프로젝트 루트로 이동한 후 `bash scripts/validate.sh`를 �
 
 검증용 앱은 부트 검사 5개를 통과하면 `Agent READY`를 출력하고 `0.0.0.0:15034`에서 간단한 상태 응답을 제공한다. 이 결과를 원본 앱의 실행 증거로 제출해서는 안 된다.
 
+## Mac에서 실행하기
+
+Mac에서는 UTM 안에 Ubuntu 가상머신을 만들고 그 안에서 실행한다. 이 프로젝트는 Linux의 `/proc`, systemd, UFW를 사용하므로 Ubuntu 환경이 필요하다. Mac의 Ubuntu VM에서 실제 실행한 검증 결과는 아직 없으며, 기존 19개 통과 기록은 Windows의 WSL 환경에서 얻은 것이다.
+
+### 1. UTM 및 Ubuntu 준비
+
+[UTM 공식 사이트](https://mac.getutm.app/)에서 Mac용 UTM을 설치하고, Mac 종류에 맞는 Ubuntu 22.04 Server ISO를 받는다.
+
+| Mac 종류 | Ubuntu 설치 파일 | 원본 앱 사용 시 |
+| --- | --- | --- |
+| Apple Silicon(M1·M2 등) | [ARM64 다운로드](https://cdimage.ubuntu.com/releases/22.04/release/)의 `live-server-arm64.iso` | ARM64용 Linux 앱 |
+| Intel Mac | [AMD64 다운로드](https://releases.ubuntu.com/22.04/)의 `live-server-amd64.iso` | x86-64용 Linux 앱 |
+
+UTM에서 `＋ → Virtualize → Linux`를 선택하고 ISO를 지정한다. 실습용 자원 설정 예시는 CPU 2개, 메모리 4GB, 디스크 25GB다. Ubuntu 설치 과정에서 `student`처럼 프로젝트 계정과 다른 일반 사용자 계정을 만든다. 설치 후 재부팅하고 해당 계정으로 로그인한다. 설치 화면으로 다시 돌아오면 UTM에서 설치 ISO를 분리한다. 자세한 화면 순서는 [UTM 공식 Ubuntu 설치 안내](https://docs.getutm.app/guides/ubuntu/)를 참고한다.
+
+이후 명령은 모두 **UTM 창 안의 Ubuntu 콘솔**에서 실행한다. 프로젝트는 Ubuntu의 홈 디렉터리에 내려받으며 Mac 공유 폴더에서 실행하지 않는다. Ubuntu Server는 기본적으로 그래픽 데스크톱 없이 콘솔로 사용할 수 있다.
+
+### 2. 프로젝트 다운로드 및 격리 테스트
+
+새 Ubuntu VM의 일반 사용자 셸에서 아래 함수를 정의하고 실행한다. 의존 도구 설치, 저장소 다운로드, 프로젝트 테스트를 순서대로 수행하며 앞 단계가 실패하면 다음 단계로 진행하지 않는다.
+
+```bash
+_prepare_agent_lab() {
+    sudo apt-get update &&
+    sudo apt-get install -y git python3 procps iproute2 util-linux gawk gzip coreutils findutils &&
+    git clone https://github.com/book732/4-1.git "$HOME/4-1" &&
+    cd "$HOME/4-1" &&
+    bash scripts/validate.sh
+}
+
+_prepare_agent_lab
+```
+
+정상 완료 기준은 `RESULT: 19 checks passed`다. 결과는 `~/4-1/evidence/local-validation.log`에 저장된다. 이 단계는 임시 경로의 대체 앱을 검증하며, 실제 계정·SSH·방화벽·cron 설정은 적용하지 않는다. 테스트는 일반 사용자로 실행해야 하므로 `validate.sh` 전체에 sudo를 붙이지 않는다. 이미 `~/4-1`을 내려받았다면 다시 clone하지 않고 해당 폴더에서 `bash scripts/validate.sh`를 실행한다.
+
+### 3. 대체 앱으로 전체 실습 환경 설치
+
+아래 함수는 계정·권한·앱·cron 설치, SSH·UFW 설정, 실제 배포 증거 수집을 순서대로 수행한다. **전용 실습 VM의 UTM 콘솔에서 실행한다.** SSH 포트를 20022로 바꾸므로 이 단계는 SSH 원격 세션에서 진행하지 않는다.
+
+```bash
+_deploy_agent_lab() {
+    cd "$HOME/4-1" &&
+    sudo bash scripts/install.sh --demo &&
+    sudo bash scripts/configure-security.sh --dedicated-lab &&
+    sudo bash scripts/collect-evidence.sh \
+        "$HOME/4-1/evidence/deployment-evidence.txt"
+}
+
+_deploy_agent_lab
+```
+
+마지막 단계는 cron이 새 로그를 기록하는지 확인하므로 최대 약 78초 동안 기다린다. 이때 다른 터미널에서 수동 관제를 실행하지 않는다. 정상 완료 기준은 `ALL DEPLOYMENT CHECKS PASSED`이며 증거는 `~/4-1/evidence/deployment-evidence.txt`에 저장된다. 이 파일은 sudo 권한으로 생성되므로 필요하면 `sudo less "$HOME/4-1/evidence/deployment-evidence.txt"`로 읽는다. 단계가 실패하면 해당 오류를 확인하며 성공 증거로 간주하지 않는다.
+
+`--demo`는 저장소에 포함된 Python 대체 앱을 설치한다. 원본 앱으로 최종 검증하려면 Mac 아키텍처에 맞는 원본 Linux 앱을 준비하고, 아래 전용 VM 설치 절차의 `--app` 방식으로 설치한 뒤 증거를 다시 수집한다. `agent-admin`의 SSH 인증키 등록은 별도 작업이며, 위 절차는 UTM 콘솔만으로 완료할 수 있다.
+
 ## 전용 Ubuntu 실습 VM 설치
 
 Ubuntu 22.04 LTS 이상, systemd로 부팅한 전용 VM을 사용한다. 이 프로젝트를 VM에 복사하고 **VM 콘솔에서** 진행한다. 일반 컨테이너와 Windows 파일시스템 경로는 최종 계정·ACL·방화벽 검증 대상으로 적합하지 않다.
